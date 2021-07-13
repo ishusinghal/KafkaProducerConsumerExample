@@ -1,0 +1,6 @@
+server:
+  port: 9000
+kafka:
+  topic: test
+  consumerGroupId: group_id
+  server: localhost:9092
