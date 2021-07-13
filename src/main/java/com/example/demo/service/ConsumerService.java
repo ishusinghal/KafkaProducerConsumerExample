@@ -13,6 +13,6 @@ public final class ConsumerService {
 
     @KafkaListener(topics = "${kafka.topic}", groupId = "${kafka.consumerGroupId}")
     public void consume(BaseEvent baseEvent) {
-        logger.info(String.format("$$$$ => Consumed message: %s", baseEvent));
+        logger.info(String.format("$$$$ => Consumed message: %s", baseEvent.getData()));
     }
 }

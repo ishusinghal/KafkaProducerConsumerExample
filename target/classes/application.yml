@@ -5,7 +5,7 @@ kafka:
   consumerGroupId: group_id
   server: localhost:9092
   concurrency:
-      level: 1
+      level: 5
   consumer:
       enabled: true
   producer:
@@ -21,6 +21,6 @@ kafka:
                password: admin                  
   
   security:
-      enabled: true
+      enabled: false
   
 #  producerPackagename: abcd
