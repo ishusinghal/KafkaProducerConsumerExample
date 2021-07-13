@@ -4,3 +4,23 @@ kafka:
   topic: test
   consumerGroupId: group_id
   server: localhost:9092
+  concurrency:
+      level: 1
+  consumer:
+      enabled: true
+  producer:
+      enabled: false
+  ssl:
+      endpoint:
+           identification:
+               mechanism:
+  sasl:
+      jaas:
+           config:
+               username: admin
+               password: admin                  
+  
+  security:
+      enabled: true
+  
+#  producerPackagename: abcd

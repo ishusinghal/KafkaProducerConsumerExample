@@ -9,8 +9,10 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -23,7 +25,9 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import com.example.demo.model.BaseEvent;
 
 @Configuration
-public class KafkaConfiguration {
+@EnableKafka
+@ConditionalOnProperty(value = "kafka.consumer.enabled", havingValue = "true", matchIfMissing = true)
+public class KafkaConsumerConfiguration extends KafkaConfig{
     @Value("${kafka.server}")
     private String server;
 
@@ -38,30 +42,6 @@ public class KafkaConfiguration {
 
 	@Value("${kafka.idleBetweenPolls:5000}")
 	private long idleBetweenPolls;
-
-	@Value("${kafka.offset.reset.config}")
-	private String offsetResetConfig;
-
-	@Value("${kafka.ssl.protocol}")
-	private String sslProtocol;
-
-	@Value("${kafka.security.enabled}")
-	private boolean securityEnabled;
-
-	@Value("${kafka.sasl.jaas.template.uri}")
-	private String jaasTemplateUri;
-
-	@Value("${kafka.sasl.jaas.config.username}")
-	private String jaasConfigUsername;
-
-	@Value("${kafka.sasl.jaas.config.password}")
-	private String jaasConfigPassword;
-
-	@Value("${kafka.sasl.mechanism}")
-	private String saslMechanism;
-
-	@Value("${kafka.ssl.endpoint.identification.mechanism}")
-	private String sslEndpointIdentificationMechanism;
 
 	private static final String SSL_ENDPOINT_IDENTIFICATION_ALGORITHM = "ssl.endpoint.identification.algorithm";
 	private static final String SASL_MECHANISM = "sasl.mechanism";
@@ -87,8 +67,13 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public ConsumerFactory<String, String> consumerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
+    public ConsumerFactory<String, BaseEvent> consumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(consumerConfig(), new StringDeserializer(), new JsonDeserializer<>(BaseEvent.class));
+    }
+
+    @Bean
+	public Map<String, Object> consumerConfig() {
+		Map<String, Object> configProps = new HashMap<>();
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, server);
         configProps.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -116,9 +101,8 @@ public class KafkaConfiguration {
     	configProps.put(JsonDeserializer.REMOVE_TYPE_INFO_HEADERS, true);
     	configProps.put(JsonDeserializer.TRUSTED_PACKAGES, ASTERIC);
     	configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        
-        return new DefaultKafkaConsumerFactory<>(configProps);
-    }
+		return configProps;
+	}
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, BaseEvent> kafkaListenerContainerFactory() {
